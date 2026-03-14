@@ -1,4 +1,4 @@
-# Demo Walkthrough (10 minutes)
+# Demo
 
 ## 1) Local model setup (Ollama)
 - `ollama serve`
