@@ -1,0 +1,8 @@
+POST /v1/chat/completions HTTP/1.1
+Host: api.example.com
+User-Agent: BurpSuiteProfessional
+Authorization: Bearer sk-demo-placeholder
+Content-Type: application/json
+Accept: application/json
+
+{"model":"gpt-4o-mini","messages":[{"role":"user","content":"Hello from Burp"}],"max_tokens":16}

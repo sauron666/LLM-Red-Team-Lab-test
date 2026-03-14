@@ -1,0 +1,33 @@
+[
+  {
+    "name": "Internal Chat Router Demo",
+    "connector_type": "internal_chat_router",
+    "base_url": "https://internal.example.local",
+    "model": "chat-router",
+    "api_key": "",
+    "timeout_sec": 30,
+    "extra_headers": {
+      "Content-Type": "application/json",
+      "X-CSRF-Token": "REPLACE_IF_NEEDED",
+      "_auth": {
+        "mode": "session",
+        "cookie": "SESSION=REPLACE_ME; other=REPLACE_ME"
+      },
+      "_http_connector": {
+        "method": "POST",
+        "path": "/chat-router/chat/v1/session/{session_id}/message",
+        "path_params": {
+          "session_id": "798823ed-a75c-4725-83b2-644xxxxx6cc3"
+        },
+        "prompt_field": "message",
+        "include_model": false,
+        "response_text_paths": ["message", "response", "data.message", "choices.0.message.content"],
+        "stream": false
+      },
+      "_lab": {
+        "capture_mode": "manual",
+        "engagement_type": "enterprise"
+      }
+    }
+  }
+]

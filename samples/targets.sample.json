@@ -1,0 +1,94 @@
+[
+  {
+    "name": "OpenAI-compatible (example)",
+    "connector_type": "openai_compat",
+    "base_url": "https://api.example.com/v1/chat/completions",
+    "model": "gpt-4o-mini",
+    "api_key": "REPLACE_ME",
+    "extra_headers": {
+      "X-Client": "LLM-Attack-Lab"
+    },
+    "timeout_sec": 30
+  },
+  {
+    "name": "Gemini (example)",
+    "connector_type": "gemini",
+    "base_url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
+    "model": "gemini-1.5-flash",
+    "api_key": "REPLACE_ME",
+    "timeout_sec": 30
+  },
+  {
+    "name": "Ollama Local",
+    "connector_type": "ollama",
+    "base_url": "http://127.0.0.1:11434/api/chat",
+    "model": "llama3.2:3b",
+    "api_key": "",
+    "timeout_sec": 60
+  },
+  {
+    "name": "Web Chat UI (Playwright, no API)",
+    "connector_type": "webchat_playwright",
+    "base_url": "https://chat.example.com/",
+    "model": "web-ui",
+    "api_key": "",
+    "extra_headers": {
+      "_webchat": {
+        "input_selector": "textarea",
+        "send_selector": "button[type=\"submit\"]",
+        "response_selector": ".assistant, [data-message-author-role=\"assistant\"]",
+        "ready_selector": "body",
+        "headless": true
+      }
+    },
+    "timeout_sec": 45
+  },
+  {
+    "name": "Internal Web Chat (Session Cookie)",
+    "connector_type": "custom_web_chat",
+    "base_url": "https://internal.example.com/chat",
+    "model": "web-ui",
+    "api_key": "",
+    "timeout_sec": 45,
+    "extra_headers": {
+      "_lab": {
+        "capture_mode": "automatic"
+      },
+      "_auth": {
+        "mode": "session",
+        "cookie": "sessionid=REPLACE_ME; csrftoken=REPLACE_ME",
+        "headers": {
+          "X-CSRF-Token": "REPLACE_ME"
+        }
+      },
+      "_webchat": {
+        "input_selector": "textarea",
+        "send_selector": "button[type=\"submit\"]",
+        "response_selector": ".assistant-message",
+        "ready_selector": "body"
+      }
+    }
+  },
+  {
+    "name": "Enterprise Router (Burp imported)",
+    "connector_type": "openai_compat",
+    "base_url": "https://internal.company.az/chat-router/chat/v1",
+    "model": "router-auto",
+    "api_key": "",
+    "timeout_sec": 30,
+    "extra_headers": {
+      "_lab": {
+        "capture_mode": "automatic",
+        "onboarded_from": "burp"
+      },
+      "_auth": {
+        "mode": "sso",
+        "cookie": "SESSION=REPLACE_ME",
+        "headers": {
+          "X-CSRF-Token": "REPLACE_ME"
+        }
+      },
+      "Accept": "application/json"
+    }
+  }
+]

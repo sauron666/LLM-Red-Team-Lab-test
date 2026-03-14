@@ -1,0 +1,25 @@
+{
+  "_webchat": {
+    "input_selector": "textarea",
+    "send_selector": "button[type='submit']",
+    "response_selector": ".assistant, [data-message-author-role='assistant']",
+    "ready_selector": "body",
+    "headless": true,
+    "submit_via_enter": false,
+    "wait_network_idle": false,
+    "response_settle_ms": 1500
+  },
+  "_lab": {
+    "capture_mode": "manual"
+  },
+  "_auth": {
+    "mode": "sso",
+    "cookie": "sessionid=REPLACE_ME; csrftoken=REPLACE_ME",
+    "headers": {
+      "X-CSRF-Token": "REPLACE_ME"
+    },
+    "local_storage": {
+      "accessToken": "REPLACE_ME_IF_APP_USES_LOCAL_STORAGE"
+    }
+  }
+}

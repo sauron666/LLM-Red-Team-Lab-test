@@ -1,0 +1,57 @@
+{
+  "source": "burp_bridge_stream",
+  "note": "",
+  "parsed": {
+    "method": "POST",
+    "path": "/api/v1/chat/completions",
+    "http_version": "HTTP/1.1",
+    "headers": {
+      "Host": "openrouter.ai",
+      "Authorization": "Bearer sk-test",
+      "Content-Type": "application/json"
+    },
+    "body": "{\"model\":\"openai/gpt-4o-mini\",\"messages\":[{\"role\":\"user\",\"content\":\"hi\"}]}",
+    "host": "openrouter.ai",
+    "url": "https://openrouter.ai/api/v1/chat/completions"
+  },
+  "inferred_target": {
+    "name": "Imported from Burp - openrouter.ai",
+    "connector_type": "openrouter",
+    "base_url": "https://openrouter.ai/api/v1",
+    "model": "openai/gpt-4o-mini",
+    "api_key": "sk-test",
+    "extra_headers": {
+      "Content-Type": "application/json"
+    },
+    "timeout_sec": 30,
+    "raw_summary": {
+      "method": "POST",
+      "path": "/api/v1/chat/completions",
+      "headers": {
+        "Host": "openrouter.ai",
+        "Authorization": "Bearer s...",
+        "Content-Type": "application/json"
+      },
+      "body_preview": "{\"model\":\"openai/gpt-4o-mini\",\"messages\":[{\"role\":\"user\",\"content\":\"hi\"}]}"
+    }
+  },
+  "captured_response_preview": "data: {\"x\":1}\n\ndata: [DONE]\n",
+  "stream_meta": {
+    "kind": "sse",
+    "content_type": "text/event-stream",
+    "event_count": 2,
+    "events_preview": [
+      {
+        "raw": "data: {\"x\":1}",
+        "data": "{\"x\":1}",
+        "data_json": {
+          "x": 1
+        }
+      },
+      {
+        "raw": "data: [DONE]\n",
+        "data": "[DONE]"
+      }
+    ]
+  }
+}

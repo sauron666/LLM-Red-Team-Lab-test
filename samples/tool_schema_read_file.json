@@ -1,0 +1,5 @@
+{
+  "tool_name": "read_file",
+  "allowed_params": ["path"],
+  "forbidden_value_patterns": ["../", "..\\", "/etc/", "C:\\Windows\\", ";", "&&"]
+}

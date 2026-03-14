@@ -1,0 +1,17 @@
+{
+  "source": "burp_bridge_ws",
+  "note": "",
+  "target_url": "wss://example",
+  "frames": [
+    "-> hello",
+    "<- world"
+  ],
+  "stream_meta": {
+    "kind": "websocket",
+    "frame_count": 2,
+    "frames_preview": [
+      "-> hello",
+      "<- world"
+    ]
+  }
+}

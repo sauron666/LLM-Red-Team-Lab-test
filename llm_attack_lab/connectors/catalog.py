@@ -1,0 +1,313 @@
+from __future__ import annotations
+
+from copy import deepcopy
+from typing import Dict, List
+
+CONNECTOR_SPECS: Dict[str, Dict] = {
+    "openai_compat": {
+        "label": "OpenAI-compatible (generic)",
+        "implementation": "openai_compat",
+        "base_url": "https://api.openai.com/v1",
+        "model": "gpt-4o-mini",
+        "api_key_required": True,
+        "notes": "Works with OpenAI-compatible /v1/chat/completions APIs.",
+        "headers": {},
+    },
+    "gemini": {
+        "label": "Google Gemini",
+        "implementation": "gemini",
+        "base_url": "https://generativelanguage.googleapis.com",
+        "model": "gemini-2.0-flash",
+        "api_key_required": True,
+        "notes": "Google Generative Language API.",
+        "headers": {},
+    },
+    "ollama": {
+        "label": "Ollama (local)",
+        "implementation": "ollama",
+        "base_url": "http://127.0.0.1:11434",
+        "model": "llama3.1",
+        "api_key_required": False,
+        "notes": "Local no-key connector via Ollama /api/chat.",
+        "headers": {},
+    },
+    "custom_http_json": {
+        "label": "Custom HTTP JSON (internal/API router)",
+        "implementation": "custom_http_json",
+        "base_url": "https://internal.example.local/chat/message",
+        "model": "custom-chat",
+        "api_key_required": False,
+        "notes": "Generic connector for internal/custom chat APIs. Configure _http_connector in extra_headers (prompt field, body template, response paths, stream/SSE).",
+        "headers": {
+            "_http_connector": {
+                "method": "POST",
+                "path": "",
+                "prompt_field": "message",
+                "system_field": "system",
+                "include_model": False,
+                "response_text_paths": ["message", "response", "answer", "choices.0.message.content"],
+                "stream": False
+            }
+        },
+    },
+    "internal_chat_router": {
+        "label": "Internal Chat Router (session/message)",
+        "implementation": "custom_http_json",
+        "base_url": "https://internal.example.local",
+        "model": "chat-router",
+        "api_key_required": False,
+        "notes": "Template for custom enterprise chat-router/BFF APIs with session path and cookie/SSO auth.",
+        "headers": {
+            "_http_connector": {
+                "method": "POST",
+                "path": "/chat-router/chat/v1/session/{session_id}/message",
+                "path_params": {"session_id": "REPLACE_SESSION_UUID"},
+                "prompt_field": "message",
+                "include_model": False,
+                "response_text_paths": ["message", "response", "data.message", "choices.0.message.content"],
+                "stream": False
+            },
+            "_auth": {
+                "mode": "session",
+                "cookie": "SESSION=..."
+            },
+            "_lab": {
+                "capture_mode": "manual",
+                "onboarded_from": "url_only"
+            }
+        },
+    },
+    "webchat_playwright": {
+        "label": "Web Chat (Playwright, no API)",
+        "implementation": "webchat_playwright",
+        "base_url": "https://chat.example.com/",
+        "model": "web-ui",
+        "api_key_required": False,
+        "notes": "Browser automation connector for chat UIs when no API is available. Requires playwright + browser install.",
+        "headers": {
+            "_webchat": {
+                "input_selector": "textarea",
+                "send_selector": "button[type='submit']",
+                "response_selector": ".assistant, [data-message-author-role='assistant']",
+                "ready_selector": "body",
+                "headless": True,
+                "submit_via_enter": False
+            }
+        },
+    },
+    "anthropic": {
+        "label": "Anthropic Claude",
+        "implementation": "anthropic",
+        "base_url": "https://api.anthropic.com",
+        "model": "claude-3-5-sonnet-latest",
+        "api_key_required": True,
+        "notes": "Messages API connector.",
+        "headers": {},
+    },
+    "azure_openai": {
+        "label": "Azure OpenAI",
+        "implementation": "azure_openai",
+        "base_url": "https://YOUR-RESOURCE.openai.azure.com/openai/deployments/YOUR-DEPLOYMENT",
+        "model": "YOUR-DEPLOYMENT",
+        "api_key_required": True,
+        "notes": "Deployment-based Azure endpoint.",
+        "headers": {"x-azure-api-version": "2024-10-21"},
+    },
+    "openrouter": {
+        "label": "OpenRouter",
+        "implementation": "openai_compat",
+        "base_url": "https://openrouter.ai/api/v1",
+        "model": "openai/gpt-4o-mini",
+        "api_key_required": True,
+        "notes": "OpenAI-compatible via OpenRouter.",
+        "headers": {},
+    },
+    "groq": {
+        "label": "Groq",
+        "implementation": "openai_compat",
+        "base_url": "https://api.groq.com/openai/v1",
+        "model": "llama-3.3-70b-versatile",
+        "api_key_required": True,
+        "notes": "OpenAI-compatible Groq endpoint.",
+        "headers": {},
+    },
+    "mistral": {
+        "label": "Mistral AI",
+        "implementation": "openai_compat",
+        "base_url": "https://api.mistral.ai/v1",
+        "model": "mistral-large-latest",
+        "api_key_required": True,
+        "notes": "OpenAI-compatible Mistral chat endpoint.",
+        "headers": {},
+    },
+    "xai": {
+        "label": "xAI (Grok API)",
+        "implementation": "openai_compat",
+        "base_url": "https://api.x.ai/v1",
+        "model": "grok-3-mini",
+        "api_key_required": True,
+        "notes": "OpenAI-compatible xAI endpoint.",
+        "headers": {},
+    },
+    "huggingface_router": {
+        "label": "Hugging Face Router",
+        "implementation": "openai_compat",
+        "base_url": "https://router.huggingface.co/v1",
+        "model": "openai/gpt-oss-120b:fireworks-ai",
+        "api_key_required": True,
+        "notes": "HF router OpenAI-style chat.",
+        "headers": {},
+    },
+    "together": {
+        "label": "Together AI",
+        "implementation": "openai_compat",
+        "base_url": "https://api.together.xyz/v1",
+        "model": "meta-llama/Llama-3.1-70B-Instruct-Turbo",
+        "api_key_required": True,
+        "notes": "OpenAI-compatible Together endpoint.",
+        "headers": {},
+    },
+    "fireworks": {
+        "label": "Fireworks AI",
+        "implementation": "openai_compat",
+        "base_url": "https://api.fireworks.ai/inference/v1",
+        "model": "accounts/fireworks/models/llama-v3p1-70b-instruct",
+        "api_key_required": True,
+        "notes": "OpenAI-compatible Fireworks endpoint.",
+        "headers": {},
+    },
+    "lmstudio": {
+        "label": "LM Studio (local server)",
+        "implementation": "openai_compat",
+        "base_url": "http://127.0.0.1:1234/v1",
+        "model": "local-model",
+        "api_key_required": False,
+        "notes": "No-key local OpenAI-compatible server.",
+        "headers": {},
+    },
+    "vllm": {
+        "label": "vLLM OpenAI server",
+        "implementation": "openai_compat",
+        "base_url": "http://127.0.0.1:8000/v1",
+        "model": "local-model",
+        "api_key_required": False,
+        "notes": "No-key by default unless fronted by auth proxy.",
+        "headers": {},
+    },
+    "llamacpp": {
+        "label": "llama.cpp server",
+        "implementation": "openai_compat",
+        "base_url": "http://127.0.0.1:8080/v1",
+        "model": "local-model",
+        "api_key_required": False,
+        "notes": "OpenAI-compatible mode.",
+        "headers": {},
+    },
+    "deepseek": {
+        "label": "DeepSeek API",
+        "implementation": "openai_compat",
+        "base_url": "https://api.deepseek.com/v1",
+        "model": "deepseek-chat",
+        "api_key_required": True,
+        "notes": "OpenAI-compatible DeepSeek endpoint.",
+        "headers": {},
+    },
+    "perplexity": {
+        "label": "Perplexity API",
+        "implementation": "openai_compat",
+        "base_url": "https://api.perplexity.ai",
+        "model": "sonar",
+        "api_key_required": True,
+        "notes": "OpenAI-compatible Perplexity chat API.",
+        "headers": {},
+    },
+    "sambanova": {
+        "label": "SambaNova Cloud",
+        "implementation": "openai_compat",
+        "base_url": "https://api.sambanova.ai/v1",
+        "model": "Meta-Llama-3.1-70B-Instruct",
+        "api_key_required": True,
+        "notes": "OpenAI-compatible SambaNova endpoint.",
+        "headers": {},
+    },
+    "localai": {
+        "label": "LocalAI (self-hosted)",
+        "implementation": "openai_compat",
+        "base_url": "http://127.0.0.1:8081/v1",
+        "model": "local-model",
+        "api_key_required": False,
+        "notes": "No-key local OpenAI-compatible LocalAI server.",
+        "headers": {},
+    },
+    "litellm_proxy": {
+        "label": "LiteLLM Proxy",
+        "implementation": "openai_compat",
+        "base_url": "http://127.0.0.1:4000/v1",
+        "model": "gpt-4o-mini",
+        "api_key_required": False,
+        "notes": "OpenAI-compatible proxy for many providers.",
+        "headers": {},
+    },
+    "openwebui_proxy": {
+        "label": "Open WebUI OpenAI Proxy",
+        "implementation": "openai_compat",
+        "base_url": "http://127.0.0.1:3000/api/openai/v1",
+        "model": "local-model",
+        "api_key_required": False,
+        "notes": "Open WebUI OpenAI-compatible proxy mode.",
+        "headers": {},
+    },
+    "textgen_webui": {
+        "label": "text-generation-webui",
+        "implementation": "openai_compat",
+        "base_url": "http://127.0.0.1:5000/v1",
+        "model": "local-model",
+        "api_key_required": False,
+        "notes": "OpenAI extension enabled in webui.",
+        "headers": {},
+    },
+    "bedrock": {
+        "label": "AWS Bedrock",
+        "implementation": "openai_compat",
+        "base_url": "",
+        "model": "bedrock/anthropic.claude-3-sonnet-20240229-v1:0",
+        "api_key_required": False,
+        "notes": "Uses AWS credentials from environment (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY).",
+        "headers": {},
+    },
+    "vertex_ai": {
+        "label": "Google Vertex AI",
+        "implementation": "openai_compat",
+        "base_url": "",
+        "model": "vertex_ai/gemini-pro",
+        "api_key_required": False,
+        "notes": "Uses GCP Application Default Credentials (ADC).",
+        "headers": {},
+    },
+    "cohere": {
+        "label": "Cohere",
+        "implementation": "openai_compat",
+        "base_url": "",
+        "model": "cohere/command-r-plus",
+        "api_key_required": True,
+        "notes": "Cohere via LiteLLM.",
+        "headers": {},
+    },
+}
+
+def list_connector_types() -> List[str]:
+    return list(CONNECTOR_SPECS.keys())
+
+def get_connector_template(connector_type: str) -> Dict:
+    spec = CONNECTOR_SPECS.get(connector_type)
+    if not spec:
+        raise KeyError(f"Unknown connector template: {connector_type}")
+    return {
+        "connector_type": connector_type,
+        "implementation": spec["implementation"],
+        "base_url": spec["base_url"],
+        "model": spec["model"],
+        "extra_headers": deepcopy(spec.get("headers", {})),
+        "notes": spec.get("notes", ""),
+        "api_key_required": bool(spec.get("api_key_required", True)),
+    }

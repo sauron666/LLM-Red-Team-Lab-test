@@ -1,0 +1,26 @@
+version: "3.9"
+
+services:
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+
+  attack-lab:
+    build: .
+    working_dir: /app
+    volumes:
+      - ./:/app
+      - attack_lab_data:/root/.llm_attack_lab
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: ["python", "main_cli.py", "--help"]
+    depends_on:
+      - ollama
+
+volumes:
+  ollama_data:
+  attack_lab_data:

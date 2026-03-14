@@ -1,0 +1,4 @@
+{
+  "insecure_alg_none": "eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzdWIiOiJkZW1vLXVzZXIiLCJpc3MiOiJsb2NhbC1kZW1vIiwiYXVkIjoibGxtLWxhYiJ9.",
+  "dummy_hs256_expired": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkZW1vIiwiaXNzIjoibG9jYWwiLCJhdWQiOiJsbW0tbGFiIiwiZXhwIjoxNjAwMDAwMDAwfQ.dummy-signature"
+}
