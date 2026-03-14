@@ -1,4 +1,4 @@
-# Screenshots to add for portfolio release
+# Screenshots
 
 - GUI main dashboard
 - Findings table
